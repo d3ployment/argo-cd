@@ -258,6 +258,7 @@ func (repo *Repository) GetHelmCreds() helm.Creds {
 			[]byte(repo.TLSClientCertData),
 			[]byte(repo.TLSClientCertKey),
 			repo.Insecure,
+			repo.InsecureOCIForceHttp,
 			workloadidentity.NewWorkloadIdentityTokenProvider(),
 		)
 	}
@@ -269,6 +270,7 @@ func (repo *Repository) GetHelmCreds() helm.Creds {
 		CertData:           []byte(repo.TLSClientCertData),
 		KeyData:            []byte(repo.TLSClientCertKey),
 		InsecureSkipVerify: repo.Insecure,
+		InsecureHTTPOnly:   repo.InsecureOCIForceHttp,
 	}
 }
 

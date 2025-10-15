@@ -118,6 +118,9 @@ func (c *Cmd) RegistryLogin(repo string, creds Creds) (string, error) {
 	if creds.GetInsecureSkipVerify() {
 		args = append(args, "--insecure")
 	}
+	if creds.GetInsecureHTTPOnly() {
+		args = append(args, "--plain-http")
+	}
 	out, _, err := c.run(context.Background(), args...)
 	if err != nil {
 		return "", fmt.Errorf("failed to login to registry: %w", err)
@@ -245,6 +248,9 @@ func (c *Cmd) Fetch(repo, chartName, version, destination string, creds Creds, p
 	if creds.GetInsecureSkipVerify() {
 		args = append(args, "--insecure-skip-tls-verify")
 	}
+	if creds.GetInsecureHTTPOnly() {
+		args = append(args, "--plain-http")
+	}
 
 	args = append(args, "--repo", repo, chartName)
 
@@ -309,6 +315,9 @@ func (c *Cmd) PullOCI(repo string, chart string, version string, destination str
 
 	if creds.GetInsecureSkipVerify() {
 		args = append(args, "--insecure-skip-tls-verify")
+	}
+	if creds.GetInsecureHTTPOnly() {
+		args = append(args, "--plain-http")
 	}
 	out, _, err := c.run(context.Background(), args...)
 	if err != nil {

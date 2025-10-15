@@ -40,6 +40,7 @@ type Creds interface {
 	GetCertData() []byte
 	GetKeyData() []byte
 	GetInsecureSkipVerify() bool
+https://github.com/cndp-dev/gitops-cluster?tab=readme-ov-file#initial-setup-of-argocd--crossplane	GetInsecureHTTPOnly() bool
 }
 
 var _ Creds = HelmCreds{}
@@ -51,6 +52,7 @@ type HelmCreds struct {
 	CertData           []byte
 	KeyData            []byte
 	InsecureSkipVerify bool
+	InsecureHTTPOnly   bool
 }
 
 func (creds HelmCreds) GetUsername() string {
@@ -77,6 +79,10 @@ func (creds HelmCreds) GetInsecureSkipVerify() bool {
 	return creds.InsecureSkipVerify
 }
 
+func (creds HelmCreds) GetInsecureHTTPOnly() bool {
+	return creds.InsecureHTTPOnly
+}
+
 var _ Creds = AzureWorkloadIdentityCreds{}
 
 type AzureWorkloadIdentityCreds struct {
@@ -85,6 +91,7 @@ type AzureWorkloadIdentityCreds struct {
 	CertData           []byte
 	KeyData            []byte
 	InsecureSkipVerify bool
+	InsecureHTTPOnly   bool
 	tokenProvider      workloadidentity.TokenProvider
 }
 
@@ -112,13 +119,18 @@ func (creds AzureWorkloadIdentityCreds) GetInsecureSkipVerify() bool {
 	return creds.InsecureSkipVerify
 }
 
-func NewAzureWorkloadIdentityCreds(repoURL string, caPath string, certData []byte, keyData []byte, insecureSkipVerify bool, tokenProvider workloadidentity.TokenProvider) AzureWorkloadIdentityCreds {
+func (creds AzureWorkloadIdentityCreds) GetInsecureHTTPOnly() bool {
+	return creds.InsecureHTTPOnly
+}
+
+func NewAzureWorkloadIdentityCreds(repoURL string, caPath string, certData []byte, keyData []byte, insecureSkipVerify bool, insecureHTTPOnly bool, tokenProvider workloadidentity.TokenProvider) AzureWorkloadIdentityCreds {
 	return AzureWorkloadIdentityCreds{
 		repoURL:            repoURL,
 		CAPath:             caPath,
 		CertData:           certData,
 		KeyData:            keyData,
 		InsecureSkipVerify: insecureSkipVerify,
+		InsecureHTTPOnly:   insecureHTTPOnly,
 		tokenProvider:      tokenProvider,
 	}
 }

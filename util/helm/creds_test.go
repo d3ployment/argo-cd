@@ -19,7 +19,7 @@ import (
 
 func TestWorkLoadIdentityUserNameShouldBeEmptyGuid(t *testing.T) {
 	workloadIdentityMock := new(mocks.TokenProvider)
-	creds := NewAzureWorkloadIdentityCreds("contoso.azurecr.io/charts", "", nil, nil, false, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds("contoso.azurecr.io/charts", "", nil, nil, false, false, workloadIdentityMock)
 	username := creds.GetUsername()
 
 	assert.Equal(t, workloadidentity.EmptyGuid, username, "The username for azure workload identity is not empty Guid")
@@ -27,7 +27,7 @@ func TestWorkLoadIdentityUserNameShouldBeEmptyGuid(t *testing.T) {
 
 func TestGetAccessTokenShouldReturnTokenFromCacheIfPresent(t *testing.T) {
 	workloadIdentityMock := new(mocks.TokenProvider)
-	creds := NewAzureWorkloadIdentityCreds("contoso.azurecr.io/charts", "", nil, nil, false, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds("contoso.azurecr.io/charts", "", nil, nil, false, false, workloadIdentityMock)
 
 	cacheKey, err := argoutils.GenerateCacheKey("accesstoken-%s", "contoso.azurecr.io")
 	require.NoError(t, err, "Error generating cache key")
@@ -43,7 +43,7 @@ func TestGetAccessTokenShouldReturnTokenFromCacheIfPresent(t *testing.T) {
 
 func TestGetPasswordShouldReturnTokenFromCacheIfPresent(t *testing.T) {
 	workloadIdentityMock := new(mocks.TokenProvider)
-	creds := NewAzureWorkloadIdentityCreds("contoso.azurecr.io/charts", "", nil, nil, false, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds("contoso.azurecr.io/charts", "", nil, nil, false, false, workloadIdentityMock)
 
 	cacheKey, err := argoutils.GenerateCacheKey("accesstoken-%s", "contoso.azurecr.io")
 	require.NoError(t, err, "Error generating cache key")
@@ -82,7 +82,7 @@ func TestGetPasswordShouldGenerateTokenIfNotPresentInCache(t *testing.T) {
 
 	workloadIdentityMock := new(mocks.TokenProvider)
 	workloadIdentityMock.On("GetToken", "https://management.core.windows.net/.default").Return(&workloadidentity.Token{AccessToken: "accessToken"}, nil)
-	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, false, workloadIdentityMock)
 
 	// Retrieve the token from the cache
 	token, err := creds.GetPassword()
@@ -100,7 +100,7 @@ func TestChallengeAzureContainerRegistry(t *testing.T) {
 	defer mockServer.Close()
 
 	workloadIdentityMock := new(mocks.TokenProvider)
-	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, false, workloadIdentityMock)
 
 	tokenParams, err := creds.challengeAzureContainerRegistry(t.Context(), creds.repoURL)
 	require.NoError(t, err)
@@ -122,7 +122,7 @@ func TestChallengeAzureContainerRegistryNoChallenge(t *testing.T) {
 
 	// Replace the real URL with the mock server URL
 	workloadIdentityMock := new(mocks.TokenProvider)
-	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, false, workloadIdentityMock)
 
 	_, err := creds.challengeAzureContainerRegistry(t.Context(), creds.repoURL)
 	require.Error(t, err)
@@ -140,7 +140,7 @@ func TestChallengeAzureContainerRegistryNonBearer(t *testing.T) {
 
 	// Replace the real URL with the mock server URL
 	workloadIdentityMock := new(mocks.TokenProvider)
-	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, false, workloadIdentityMock)
 
 	_, err := creds.challengeAzureContainerRegistry(t.Context(), creds.repoURL)
 	assert.ErrorContains(t, err, "does not allow 'Bearer' authentication")
@@ -157,7 +157,7 @@ func TestChallengeAzureContainerRegistryNoService(t *testing.T) {
 
 	// Replace the real URL with the mock server URL
 	workloadIdentityMock := new(mocks.TokenProvider)
-	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, false, workloadIdentityMock)
 
 	_, err := creds.challengeAzureContainerRegistry(t.Context(), creds.repoURL)
 	assert.ErrorContains(t, err, "service parameter not found in challenge")
@@ -174,7 +174,7 @@ func TestChallengeAzureContainerRegistryNoRealm(t *testing.T) {
 
 	// Replace the real URL with the mock server URL
 	workloadIdentityMock := new(mocks.TokenProvider)
-	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, false, workloadIdentityMock)
 
 	_, err := creds.challengeAzureContainerRegistry(t.Context(), creds.repoURL)
 	assert.ErrorContains(t, err, "realm parameter not found in challenge")
@@ -194,7 +194,7 @@ func TestGetAccessTokenAfterChallenge_Success(t *testing.T) {
 
 	workloadIdentityMock := new(mocks.TokenProvider)
 	workloadIdentityMock.On("GetToken", "https://management.core.windows.net/.default").Return(&workloadidentity.Token{AccessToken: "accessToken"}, nil)
-	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, false, workloadIdentityMock)
 
 	tokenParams := map[string]string{
 		"realm":   mockServer.URL,
@@ -219,7 +219,7 @@ func TestGetAccessTokenAfterChallenge_Failure(t *testing.T) {
 	// Create an instance of AzureWorkloadIdentityCreds with the mock credential wrapper
 	workloadIdentityMock := new(mocks.TokenProvider)
 	workloadIdentityMock.On("GetToken", "https://management.core.windows.net/.default").Return(&workloadidentity.Token{AccessToken: "accessToken"}, nil)
-	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, false, workloadIdentityMock)
 
 	tokenParams := map[string]string{
 		"realm":   mockServer.URL,
@@ -244,7 +244,7 @@ func TestGetAccessTokenAfterChallenge_MalformedResponse(t *testing.T) {
 	// Create an instance of AzureWorkloadIdentityCreds with the mock credential wrapper
 	workloadIdentityMock := new(mocks.TokenProvider)
 	workloadIdentityMock.On("GetToken", "https://management.core.windows.net/.default").Return(&workloadidentity.Token{AccessToken: "accessToken"}, nil)
-	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, false, workloadIdentityMock)
 
 	tokenParams := map[string]string{
 		"realm":   mockServer.URL,
@@ -307,7 +307,7 @@ func TestGetAccessToken_FetchNewTokenIfExistingIsExpired(t *testing.T) {
 
 	workloadIdentityMock := new(mocks.TokenProvider)
 	workloadIdentityMock.On("GetToken", "https://management.core.windows.net/.default").Return(&workloadidentity.Token{AccessToken: "accessToken"}, nil)
-	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, false, workloadIdentityMock)
 
 	refreshToken, err := creds.GetAccessToken()
 	require.NoError(t, err)
@@ -361,7 +361,7 @@ func TestGetAccessToken_ReuseTokenIfExistingIsNotExpired(t *testing.T) {
 
 	workloadIdentityMock := new(mocks.TokenProvider)
 	workloadIdentityMock.On("GetToken", "https://management.core.windows.net/.default").Return(&workloadidentity.Token{AccessToken: "accessToken"}, nil)
-	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, workloadIdentityMock)
+	creds := NewAzureWorkloadIdentityCreds(mockServer.URL[8:], "", nil, nil, true, false, workloadIdentityMock)
 
 	refreshToken, err := creds.GetAccessToken()
 	require.NoError(t, err)
