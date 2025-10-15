@@ -40,7 +40,7 @@ type Creds interface {
 	GetCertData() []byte
 	GetKeyData() []byte
 	GetInsecureSkipVerify() bool
-https://github.com/cndp-dev/gitops-cluster?tab=readme-ov-file#initial-setup-of-argocd--crossplane	GetInsecureHTTPOnly() bool
+	GetInsecureHTTPOnly() bool
 }
 
 var _ Creds = HelmCreds{}
